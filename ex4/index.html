@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>four</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script src="index2.js" type="application/javascript"></script>
+</head>
+
+
+<style>
+.game_table {
+	border: 2px solid black;
+	border-spacing: 5px;
+}
+td {
+	width: 100px;
+	height: 100px;
+	text-align: center;
+	font-size: 48px;
+	font-family: "Gill Sans", "Gill Sans MT", "Myriad Pro", "DejaVu Sans Condensed", Helvetica, Arial, "sans-serif";
+	background: lightsalmon;
+}
+</style>
+
+
+<body>
+    <table id="game" class="game_table">
+    </table>
+    <p id="done"></p>
+    <button onclick="window.location.reload()">Reset</button> <!--Restart game by reloading the page-->
+</body>
+</html>

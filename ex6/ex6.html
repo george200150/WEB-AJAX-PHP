@@ -1,0 +1,55 @@
+<!doctype HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>six</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+
+
+<body>
+<h3>Produse</h3>
+<div id="prodContainer"></div>
+<br>
+<label>Producator </label><input type="text" id="prod"><br>
+<label>Procesor </label><input type="text" id="proc"><br>
+<label>Memorie </label><input type="text" id="mem"><br>
+<label>Capacitate HDD </label><input type="text" id="hdd"><br>
+<label>Placa video </label><input type="text" id="video"><br><br>
+<button onclick="filtreaza()"> Filtreaza </button>
+</body>
+
+
+<script>
+function filtreaza() {
+	var xhttp;
+	xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			document.getElementById("prodContainer").innerHTML = this.responseText;
+		}
+	};
+	var prod = document.getElementById("prod").value;
+	var proc = document.getElementById("proc").value;
+	var mem = document.getElementById("mem").value;
+	var hdd = document.getElementById("hdd").value;
+	var video = document.getElementById("video").value;
+	xhttp.open("GET", "loadItems.php?prod=" + prod + "&proc=" + proc + "&mem=" + mem + "&hdd=" + hdd + "&video=" + video, true);
+	// create HTTP request with all search parameters (even if they do not have a value)
+	xhttp.send();
+}
+
+function filtreaza2() {
+	$.get("loadItems.php", {prod : prod , proc : proc, mem : mem, hdd : hdd, video : video},	
+	function(data,status) {
+		$("#prodContainer").html(data);
+	});
+}
+
+window.onload = function() {
+	filtreaza(); // empty filter means get all data
+};
+</script>
+
+
+</html>

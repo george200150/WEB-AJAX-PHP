@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>three</title>
+</head>
+
+<body>
+<div id="main">
+	<div class="elems">
+		<h3>Select one id to fill data</h3>
+		<select id="ids" onchange="getById(this)" title="ids"></select>
+  </div>
+	<div>
+		<form class="elems" onsubmit="updateDB()" method="post">
+		<p>Name</p>
+		<input id="name" name="name" placeholder="Name">
+		<p>Surname</p>
+		<input id="surname" name="surname" placeholder="Surname">
+		<p>Telephone</p>
+		<input id="telephone" name="telephone" placeholder="Telephone">
+		<p>E-mail</p>
+		<input id="email" name="email" placeholder="E-mail">
+		<input type="submit" id="save" value="Save">
+		</form>
+	</div>
+</div>
+</body>
+
+<script>
+loadIds(); // on startup, fetch the id-s of all the people from the DB
+addEventListeners(); // add listener to all the fields in order to enable "SAVE" when something is changed
+
+var lastSelectedId = 1;
+var isFirstTime = true;
+	
+// add options in select
+function loadIds() {
+    document.getElementById("save").disabled = true; // on startup, the "SAVE" button is disabled
+    if (window.XMLHttpRequest) { // AJAX compatibility
+        xmlhttp = new XMLHttpRequest();
+    } else {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function () { // get the list of id-s on document ready
+        if (this.readyState === 4 && this.status === 200) {
+			document.getElementById("ids").innerHTML = "<option id='0'>-</option>";
+            document.getElementById("ids").innerHTML += this.responseText;
+        }
+    };
+    xmlhttp.open("GET", "loadIds.php?", true);
+    xmlhttp.send();
+}
+
+// fill data for the seleted option id
+function getById(select) {
+	if (isFirstTime){
+		var mySelect = document.getElementById("ids");
+		mySelect.remove('0'); // on first change, we remove the startup placeholder
+		isFirstTime = false;
+	}
+	var button = document.getElementById("save");
+	if(button.disabled === false){
+		if (confirm("YOU HAVE UNSAVED DATA! DO YOU REALLY WANT TO LEAVE?")) { // force change and lose the updates
+			loadInfoById(select);
+			lastSelectedId = select.value; // on selected id change, the last id selected is updated
+		} else { // do not change the page. there are updated on it
+			document.getElementById("ids").value = lastSelectedId; // stay on this page (reset the currently selected id)
+		}
+	}
+	else{ // no update to the content. just change the selection
+		loadInfoById(select);
+		lastSelectedId = select.value; // on selected id change, the last id selected is updated
+	}
+}
+	
+function loadInfoById(select){
+	document.getElementById("save").disabled === false;
+			var selectedId = select.options[select.selectedIndex].value; // get the selected id value
+			if (window.XMLHttpRequest) {
+				xmlhttp = new XMLHttpRequest();
+			} else {
+				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.onreadystatechange = function () {
+				if (this.readyState === 4 && this.status === 200) {
+					loadForm(this.responseText);
+				}
+			};
+			xmlhttp.open("GET", "getById.php?id=" + selectedId, true);
+			// send the id through the request and receive all the information
+			xmlhttp.send();
+}
+
+function loadForm(data) { // assign the resulted data to every field in the form 
+    var person = data.split(','); // split the formatted data (.csv)
+    document.getElementById("name").value = person[0];
+    document.getElementById("surname").value = person[1];
+	document.getElementById("telephone").value = person[2];
+    document.getElementById("email").value = person[3];
+    document.getElementById("save").disabled = true;
+}
+
+function enableButton() {
+    document.getElementById("save").disabled = false; // enable the "SAVE" button when something changes
+}
+
+// on change (any input), enable "SAVE" button
+function addEventListeners() {
+    var inputs = document.getElementsByTagName("input");
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].addEventListener('keydown', enableButton); // event listeners to enable the "SAVE" button
+    }
+}
+
+// POST request to update
+function updateDB() {
+    if (window.XMLHttpRequest) {
+        xmlhttp = new XMLHttpRequest();
+    } else {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            alert(this.responseText);
+        }
+    };
+    var select = document.getElementById("ids"); // format the data to match the HTTP request format
+    var formText = "id=" + select.options[select.selectedIndex].value + "&";
+	// set the id of the record in the request (this is important to be the current one - that is why in "getById" function
+	//  we have a "rollback" system that resets the last selected id to the list, in case we choose to stay on the page)
+    var inputs = document.getElementsByTagName("input"); // get the form fields
+    for (var i = 0; i < inputs.length - 2; i++) { // add "parameter = value & " to the HTTP request
+        formText += inputs[i].name + "=" + inputs[i].value + "&";
+    }
+    formText += inputs[inputs.length - 2].name + "=" + inputs[inputs.length - 2].value; // last query part does not have "&"
+    //alert(formText);
+    xmlhttp.open("POST", "updateDB.php", true); // send sensitive data only through POST (and not GET)
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded"); // supports characters such as "&"
+    xmlhttp.send(formText);
+}
+</script>
+
+</html>
